@@ -40,9 +40,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'version' key with the API version string (e.g., "6.0.10").
                   On error, contains 'error' key with the error message.
-
-        Example response:
-            {"version": "6.0.10"}
         """
         try:
             await ctx.info("Getting Zabbix API version...")
@@ -204,19 +201,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   and pagination metadata ('limit', 'offset').
                   Each host contains: hostid, host (technical name), name (visible name),
                   status, groups, interfaces, and other host properties.
-
-        Example response:
-            {
-                "hosts": [
-                    {
-                        "hostid": "10001",
-                        "host": "server1",
-                        "name": "Production Server 1",
-                        "status": "0"
-                    }
-                ],
-                "count": 1
-            }
         """
         try:
             await ctx.info("Retrieving hosts...")
@@ -352,12 +336,6 @@ def register_tools(mcp, config: ZabbixConfig):
             dict: Contains 'hostids' list with IDs of newly created hosts and 'success' flag.
                   On error, contains 'error' key with the error message.
 
-        Example response:
-            {
-                "hostids": ["10005"],
-                "success": true
-            }
-
         Note: Use hostgroup_get to find group IDs and template_get to find template IDs.
         """
         try:
@@ -439,12 +417,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'hostids' list with updated host IDs and 'success' flag.
                   On error, contains 'error' key with the error message.
-
-        Example response:
-            {
-                "hostids": ["10001"],
-                "success": true
-            }
         """
         try:
             await ctx.info(f"Updating host {hostid}...")
@@ -504,12 +476,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'hostids' list with deleted host IDs and 'success' flag.
                   On error, contains 'error' key with the error message.
-
-        Example response:
-            {
-                "hostids": ["10001", "10002"],
-                "success": true
-            }
 
         Warning: This is permanent. Consider disabling the host instead (set status=1)
                  if you might need to restore it later.
@@ -619,15 +585,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - groupid: Unique group ID
                   - name: Group name (e.g., 'Linux servers', 'Web Servers')
 
-        Example response:
-            {
-                "hostgroups": [
-                    {"groupid": "2", "name": "Linux servers"},
-                    {"groupid": "3", "name": "Web Servers"}
-                ],
-                "success": true
-            }
-
         Note: Use host_get to see which hosts belong to a group, or which groups contain specific hosts.
         """
         try:
@@ -707,12 +664,6 @@ def register_tools(mcp, config: ZabbixConfig):
             dict: Contains 'groupids' list with the newly created group ID(s) and 'success' flag.
                   The groupid is needed for other operations like adding hosts to the group.
 
-        Example response:
-            {
-                "groupids": ["5"],
-                "success": true
-            }
-
         Note: Group names must be unique. Use hostgroup_get to verify the group name is not already taken.
         """
         try:
@@ -765,12 +716,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'groupids' list with updated group IDs and 'success' flag.
                   On error, contains 'error' key with the error message.
-
-        Example response:
-            {
-                "groupids": ["5"],
-                "success": true
-            }
         """
         try:
             await ctx.info(f"Updating host group {groupid}...")
@@ -824,12 +769,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'groupids' list with deleted group IDs and 'success' flag.
                   On error, contains 'error' key with the error message.
-
-        Example response:
-            {
-                "groupids": ["5"],
-                "success": true
-            }
 
         Warning: If hosts belong to the group, they will no longer be members after deletion.
                  Consider reassigning hosts to different groups before deleting.
@@ -963,15 +902,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - name: Template name (e.g., 'Linux Server Template')
                   - description: Optional template description
 
-        Example response:
-            {
-                "templates": [
-                    {"templateid": "10001", "name": "Linux Server Template", "description": ""},
-                    {"templateid": "10002", "name": "MySQL Template", "description": "Database monitoring"}
-                ],
-                "success": true
-            }
-
         Note: Use host_create or host_update with templateids to apply templates to hosts.
         """
         try:
@@ -1067,12 +997,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'templateids' list with newly created template ID(s) and 'success' flag.
 
-        Example response:
-            {
-                "templateids": ["10003"],
-                "success": true
-            }
-
         Note: After creating a template, add items, triggers, and graphs to it using respective APIs.
               Then apply to hosts with host_update using the templateid.
         """
@@ -1134,12 +1058,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'templateids' list with updated template IDs and 'success' flag.
                   On error, contains 'error' key with the error message.
-
-        Example response:
-            {
-                "templateids": ["10003"],
-                "success": true
-            }
         """
         try:
             await ctx.info(f"Updating template {templateid}...")
@@ -1195,12 +1113,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'templateids' list with deleted template IDs and 'success' flag.
                   On error, contains 'error' key with the error message.
-
-        Example response:
-            {
-                "templateids": ["10003"],
-                "success": true
-            }
 
         Warning: Deleting a template removes all associated items, triggers, and graphs from
                  hosts using that template. Consider unlinked the template first if you want
@@ -1336,22 +1248,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - status: 0=enabled, 1=disabled
                   - interval: Collection interval in seconds
 
-        Example response:
-            {
-                "items": [
-                    {
-                        "itemid": "23456",
-                        "name": "CPU load average",
-                        "key_": "system.cpu.load",
-                        "type": "0",
-                        "value_type": "0",
-                        "status": "0",
-                        "interval": "60"
-                    }
-                ],
-                "success": true
-            }
-
         Note: Use item_create to add new metrics to monitor, item_delete to remove them.
         """
         try:
@@ -1473,12 +1369,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'itemids' list with newly created item ID(s) and 'success' flag.
 
-        Example response:
-            {
-                "itemids": ["23789"],
-                "success": true
-            }
-
         Note: The item key_ must match what the data source (agent, SNMP, etc.) can provide.
               After creation, configure triggers to alert on this item's values.
         """
@@ -1556,12 +1446,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'itemids' list with updated item IDs and 'success' flag.
                   On error, contains 'error' key with the error message.
-
-        Example response:
-            {
-                "itemids": ["23789"],
-                "success": true
-            }
         """
         try:
             await ctx.info(f"Updating item {itemid}...")
@@ -1623,12 +1507,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'itemids' list with deleted item IDs and 'success' flag.
                   On error, contains 'error' key with the error message.
-
-        Example response:
-            {
-                "itemids": ["23789"],
-                "success": true
-            }
 
         Warning: Deleting an item removes all its historical data and associated triggers.
                  Consider disabling the item first to test impact before permanent deletion.
@@ -1749,21 +1627,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - value: 0=normal, 1=problem
                   - severity: Severity level (0-5)
 
-        Example response:
-            {
-                "triggers": [
-                    {
-                        "triggerid": "13567",
-                        "description": "High CPU load",
-                        "expression": "{10084:system.cpu.load[percpu,avg1]}>5",
-                        "state": "0",
-                        "value": "0",
-                        "severity": "3"
-                    }
-                ],
-                "success": true
-            }
-
         Note: Use trigger_create to define new monitoring rules, trigger_delete to remove them.
         """
         try:
@@ -1865,12 +1728,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'triggerids' list with newly created trigger ID(s) and 'success' flag.
 
-        Example response:
-            {
-                "triggerids": ["13789"],
-                "success": true
-            }
-
         Note: Ensure expression references valid items. Use multiple conditions combined with operators
               like 'and', 'or' for complex logic. Test trigger before enabling in production.
         """
@@ -1944,12 +1801,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'triggerids' list with updated trigger IDs and 'success' flag.
                   On error, contains 'error' key with the error message.
-
-        Example response:
-            {
-                "triggerids": ["13789"],
-                "success": true
-            }
         """
         try:
             await ctx.info(f"Updating trigger {triggerid}...")
@@ -2011,12 +1862,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'triggerids' list with deleted trigger IDs and 'success' flag.
                   On error, contains 'error' key with the error message.
-
-        Example response:
-            {
-                "triggerids": ["13789"],
-                "success": true
-            }
 
         Warning: Deleting a trigger stops all alerts and problem detection for that condition.
                  Consider disabling instead (set status=1) if you might need to re-enable it later.
@@ -2145,19 +1990,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - clock: Unix timestamp when problem occurred
                   - ns: Nanosecond adjustment
                   - acknowledged: 0=unacknowledged, 1=acknowledged
-
-        Example response:
-            {
-                "problems": [
-                    {
-                        "eventid": "1234567",
-                        "objectid": "13567",
-                        "clock": "1699564800",
-                        "acknowledged": "0"
-                    }
-                ],
-                "success": true
-            }
 
         Note: Use event_acknowledge to mark problems as seen. Get more details with event_get.
         """
@@ -2331,21 +2163,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - value: 0=normal, 1=problem
                   - acknowledged: 0=not acknowledged, 1=acknowledged
 
-        Example response:
-            {
-                "events": [
-                    {
-                        "eventid": "1234567",
-                        "objectid": "13567",
-                        "clock": "1699564800",
-                        "value": "1",
-                        "acknowledged": "0"
-                    }
-                ],
-                "count": 1,
-                "success": true
-            }
-
         Note: Use event_acknowledge to mark events as seen by operations team.
         """
         try:
@@ -2445,12 +2262,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'success' flag and may include event IDs that were successfully acknowledged.
 
-        Example response:
-            {
-                "eventids": ["1234567", "1234568"],
-                "success": true
-            }
-
         Note: Acknowledging an event doesn't resolve the underlying problem - it just marks that
               the issue has been noticed. The trigger still needs the underlying condition fixed.
         """
@@ -2548,16 +2359,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - value: The collected metric value
                   - clock: Unix timestamp when value was collected
                   - ns: Nanosecond adjustment
-
-        Example response:
-            {
-                "history": [
-                    {"itemid": "23456", "value": "65.5", "clock": "1699564800", "ns": "0"},
-                    {"itemid": "23456", "value": "62.3", "clock": "1699564860", "ns": "0"}
-                ],
-                "count": 2,
-                "success": true
-            }
 
         Note: History contains detailed point-in-time data. For aggregated analysis, use trend_get.
               For high-volume items, use limit and time filters to avoid excessive data retrieval.
@@ -2660,22 +2461,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - value_avg: Average value during the hour
                   - num: Number of values included in calculation
 
-        Example response:
-            {
-                "trends": [
-                    {
-                        "itemid": "23456",
-                        "clock": "1699560000",
-                        "value_min": "50.1",
-                        "value_max": "70.5",
-                        "value_avg": "60.8",
-                        "num": "60"
-                    }
-                ],
-                "count": 1,
-                "success": true
-            }
-
         Note: Trends are hourly aggregates. For finer-grained data, use history_get.
               Trends are kept for longer periods than raw history for space efficiency.
         """
@@ -2775,16 +2560,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - surname: User's last name
                   - type: User type (1=Zabbix user, 2=Zabbix admin, 3=Zabbix super admin)
 
-        Example response:
-            {
-                "users": [
-                    {"userid": "1", "alias": "Admin", "name": "Admin", "surname": "", "type": "3"},
-                    {"userid": "2", "alias": "guest", "name": "Guest", "surname": "User", "type": "1"}
-                ],
-                "count": 2,
-                "success": true
-            }
-
         Note: Use user_create to add new users, user_delete to remove them.
         """
         try:
@@ -2869,12 +2644,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'userids' list with newly created user ID(s) and 'success' flag.
 
-        Example response:
-            {
-                "userids": ["4"],
-                "success": true
-            }
-
         Note: New users receive default permissions from their assigned groups. Change passwords
               through user_update if needed. Username cannot be changed after creation.
         """
@@ -2952,12 +2721,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'userids' list with updated user IDs and 'success' flag.
                   On error, contains 'error' key with the error message.
-
-        Example response:
-            {
-                "userids": ["4"],
-                "success": true
-            }
         """
         try:
             await ctx.info(f"Updating user {userid}...")
@@ -3019,12 +2782,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'userids' list with deleted user IDs and 'success' flag.
                   On error, contains 'error' key with the error message.
-
-        Example response:
-            {
-                "userids": ["4"],
-                "success": true
-            }
 
         Warning: This action is permanent and immediate. Deleted users lose all access to Zabbix.
                  Consider disabling the user instead (modify type) if temporary removal is needed.
@@ -3109,15 +2866,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - host: Proxy hostname/name
                   - status: 5=active proxy, 6=passive proxy
 
-        Example response:
-            {
-                "proxies": [
-                    {"proxyid": "10000", "host": "proxy1", "status": "5"}
-                ],
-                "count": 1,
-                "success": true
-            }
-
         Note: Use proxy_create to add new proxies, proxy_delete to remove them.
               Assign hosts to proxies with host_create or host_update using proxyid field.
         """
@@ -3199,12 +2947,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'proxyids' list with newly created proxy ID(s) and 'success' flag.
 
-        Example response:
-            {
-                "proxyids": ["10001"],
-                "success": true
-            }
-
         Note: After creating, configure the proxy agent on the remote system and assign hosts
               to it using host_create or host_update with the proxyid.
         """
@@ -3268,12 +3010,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'proxyids' list with updated proxy IDs and 'success' flag.
                   On error, contains 'error' key with the error message.
-
-        Example response:
-            {
-                "proxyids": ["10001"],
-                "success": true
-            }
         """
         try:
             await ctx.info(f"Updating proxy {proxyid}...")
@@ -3331,12 +3067,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'proxyids' list with deleted proxy IDs and 'success' flag.
                   On error, contains 'error' key with the error message.
-
-        Example response:
-            {
-                "proxyids": ["10001"],
-                "success": true
-            }
 
         Warning: Hosts using this proxy will lose monitoring until reassigned. Plan reassignment
                  before deleting. Consider if data history should be preserved.
@@ -3421,20 +3151,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - name: Maintenance window name
                   - active_since: Unix timestamp when maintenance becomes active
                   - active_till: Unix timestamp when maintenance ends
-
-        Example response:
-            {
-                "maintenance": [
-                    {
-                        "maintenanceid": "3",
-                        "name": "Patch Tuesday",
-                        "active_since": "1699564800",
-                        "active_till": "1699575600"
-                    }
-                ],
-                "count": 1,
-                "success": true
-            }
 
         Note: Use maintenance_create to schedule maintenance, maintenance_delete to cancel it.
         """
@@ -3521,12 +3237,6 @@ def register_tools(mcp, config: ZabbixConfig):
 
         Returns:
             dict: Contains 'maintenanceids' list with newly created maintenance ID(s) and 'success' flag.
-
-        Example response:
-            {
-                "maintenanceids": ["5"],
-                "success": true
-            }
 
         Note: During maintenance windows, no alerts are generated. Monitoring still occurs but alerts
               are suppressed. Use for planned maintenance to avoid alert fatigue.
@@ -3628,12 +3338,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'maintenanceids' list with updated maintenance IDs and 'success' flag.
                   On error, contains 'error' key with the error message.
-
-        Example response:
-            {
-                "maintenanceids": ["5"],
-                "success": true
-            }
         """
         try:
             await ctx.info(f"Updating maintenance {maintenanceid}...")
@@ -3698,12 +3402,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'maintenanceids' list with deleted maintenance IDs and 'success' flag.
                   On error, contains 'error' key with the error message.
-
-        Example response:
-            {
-                "maintenanceids": ["5"],
-                "success": true
-            }
 
         Note: Alerts will resume immediately upon deletion. If maintenance period has passed,
               no impact on historical data. Consider timing of deletion to avoid alert storms.
@@ -3795,15 +3493,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - name: Action name/description
                   - status: 0=enabled, 1=disabled
                   - esc_period: Escalation period
-
-        Example response:
-            {
-                "actions": [
-                    {"actionid": "1", "name": "Send notifications", "status": "0", "esc_period": "1h"}
-                ],
-                "count": 1,
-                "success": true
-            }
 
         Note: Actions are triggered when problem conditions are met. Use with caution in production.
         """
@@ -3913,15 +3602,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - mediatypeid: Unique media type ID
                   - type: Type code (0=email, 1=Exec script, 2=SMS, 3=Webhook, etc.)
                   - name: Media type name/description
-
-        Example response:
-            {
-                "mediatypes": [
-                    {"mediatypeid": "1", "type": "0", "name": "Email"}
-                ],
-                "count": 1,
-                "success": true
-            }
 
         Note: Use with actions to define alert routing. Configure alert settings in media type configuration.
         """
@@ -4056,15 +3736,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - name: Graph name
                   - type: Graph type (0=normal line, 1=stacked line, 2=bar, 3=pie)
 
-        Example response:
-            {
-                "graphs": [
-                    {"graphid": "562", "name": "CPU load", "type": "0"}
-                ],
-                "count": 1,
-                "success": true
-            }
-
         Note: Graphs display collected item data. Use for visualization and dashboard creation.
         """
         try:
@@ -4184,15 +3855,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - key_: Discovery rule key
                   - type: Discovery method (0=Zabbix agent, 2=SNMP, etc.)
 
-        Example response:
-            {
-                "discoveryrules": [
-                    {"itemid": "23789", "name": "Discover network devices", "key_": "discovery.key", "type": "2"}
-                ],
-                "count": 1,
-                "success": true
-            }
-
         Note: Discovery rules generate items and triggers dynamically. Monitor their status and adjust as needed.
         """
         try:
@@ -4303,15 +3965,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - key_: Item prototype key
                   - type: Data collection method
 
-        Example response:
-            {
-                "itemprototypes": [
-                    {"itemid": "23790", "name": "CPU load", "key_": "system.cpu.load", "type": "0"}
-                ],
-                "count": 1,
-                "success": true
-            }
-
         Note: Item prototypes create items dynamically. Use discovery rules to manage them.
         """
         try:
@@ -4417,15 +4070,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - name: Rule name
                   - status: 0=enabled, 1=disabled
 
-        Example response:
-            {
-                "drules": [
-                    {"druleid": "4", "name": "Local LAN discovery", "status": "0"}
-                ],
-                "count": 1,
-                "success": true
-            }
-
         Note: Network discovery performs network scans. Use carefully to avoid performance impact.
         """
         try:
@@ -4517,12 +4161,6 @@ def register_tools(mcp, config: ZabbixConfig):
             dict: Contains 'content' with the exported configuration data.
                   The format depends on the format_type parameter.
 
-        Example response:
-            {
-                "content": "{ ... JSON/XML content ... }",
-                "success": true
-            }
-
         Note: Large exports may take time. Use specific IDs for targeted exports.
         """
         try:
@@ -4589,12 +4227,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains import result with created/updated object counts.
                   Returns success flag and summary of imported items.
-
-        Example response:
-            {
-                "result": {"hosts": {"created": 1, "updated": 0}},
-                "success": true
-            }
 
         Warning: Importing can create or overwrite existing configurations.
                  Verify content before importing in production environments.
@@ -4683,15 +4315,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - name: SLA name
                   - slo: Service Level Objective percentage target
                   - status: 0=enabled, 1=disabled
-
-        Example response:
-            {
-                "slas": [
-                    {"slaid": "1", "name": "Production SLA", "slo": "99.9", "status": "0"}
-                ],
-                "count": 1,
-                "success": true
-            }
 
         Note: SLAs measure service availability. Track compliance and generate reports.
         """
@@ -4797,15 +4420,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - serviceid: Unique service ID
                   - name: Service name
                   - status: Service status/availability
-
-        Example response:
-            {
-                "services": [
-                    {"serviceid": "1", "name": "Web Application", "status": "0"}
-                ],
-                "count": 1,
-                "success": true
-            }
 
         Note: Services form the basis for SLA tracking. Define service hierarchies for dependency mapping.
         """
@@ -4918,15 +4532,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - name: Script name
                   - command: Script command or code
 
-        Example response:
-            {
-                "scripts": [
-                    {"scriptid": "1", "name": "Restart service", "command": "systemctl restart service"}
-                ],
-                "count": 1,
-                "success": true
-            }
-
         Note: Scripts can be run manually or triggered by actions. Use for automation and remediation.
         """
         try:
@@ -5006,12 +4611,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains execution result with status and any output from the script.
                   Returns success flag and response data from the executed script.
-
-        Example response:
-            {
-                "response": "Service restarted successfully",
-                "success": true
-            }
 
         Warning: Script execution happens remotely on the host. Ensure the script is safe
                  and the host has proper agent/connectivity to execute it.
@@ -5106,15 +4705,6 @@ def register_tools(mcp, config: ZabbixConfig):
                   - macro: Macro name/identifier
                   - value: Macro value
                   - description: Optional description
-
-        Example response:
-            {
-                "macros": [
-                    {"hostmacroids": "10", "macro": "{$THRESHOLD}", "value": "80"}
-                ],
-                "count": 1,
-                "success": true
-            }
 
         Note: Use {$MACRO_NAME} syntax in items and triggers to reference macros. Global macros apply to all hosts.
         """
@@ -5212,12 +4802,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'hostmacroids' list with newly created macro ID(s) and 'success' flag.
 
-        Example response:
-            {
-                "hostmacroids": ["12"],
-                "success": true
-            }
-
         Note: Use {$MACRO_NAME} in item keys and trigger expressions. Global macros use different API.
         """
         try:
@@ -5279,12 +4863,6 @@ def register_tools(mcp, config: ZabbixConfig):
         Returns:
             dict: Contains 'hostmacroids' list with deleted macro IDs and 'success' flag.
                   On error, contains 'error' key with the error message.
-
-        Example response:
-            {
-                "hostmacroids": ["12"],
-                "success": true
-            }
 
         Warning: Deleting a macro may break items/triggers that reference it. Verify impact before deletion.
         """
