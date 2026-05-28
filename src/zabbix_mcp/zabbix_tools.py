@@ -4118,60 +4118,85 @@ def register_tools(mcp, config: ZabbixConfig):
             str,
             Field(
                 default="json",
-                description="Export format: 'json' or 'xml'.",
+                description="Export format: 'json', 'xml', or 'yaml'.",
             ),
         ] = "json",
         prettyprint: Annotated[
-            int,
-            Field(default=0, description="0=normal, 1=pretty-printed."),
-        ] = 0,
-        hostids: Annotated[list[str] | None, Field(default=None)] = None,
-        templateids: Annotated[list[str] | None, Field(default=None)] = None,
-        groupids: Annotated[list[str] | None, Field(default=None)] = None,
-        sortfield: Annotated[
-            str | None,
-            Field(default=None, description="Field to sort by."),
-        ] = None,
-        sortorder: Annotated[
-            str,
-            Field(default="ASC", description="Sort direction - 'ASC' or 'DESC'."),
-        ] = "ASC",
-        count_output: Annotated[
             bool,
-            Field(
-                default=False,
-                description="If true, returns only the count of matched objects as an integer.",
-            ),
+            Field(default=False, description="If true, returns pretty-printed output."),
         ] = False,
+        templateids: Annotated[
+            list[str] | None,
+            Field(default=None, description="List of template IDs to export."),
+        ] = None,
+        hostids: Annotated[
+            list[str] | None,
+            Field(default=None, description="List of host IDs to export."),
+        ] = None,
     ) -> dict:
         """
         Export Zabbix configurations.
 
-        Exports monitored hosts, templates, and groups to JSON or XML format.
-        Useful for backup, migration, or sharing configurations.
+        Exports monitored hosts, templates, and their complete configurations to JSON, XML, or YAML format.
+        Useful for backup, migration, disaster recovery, or sharing configurations.
+
+        When you export templates or hosts, the export includes:
+        - All associated items (metrics/data sources)
+        - All triggers and their dependencies
+        - Discovery rules and prototypes
+        - Graphs and visualizations
+        - Macros and variable definitions
+        - Host groups and interfaces (for hosts)
+        - Inventory data (for hosts)
+        - And all other configuration elements
 
         Args:
-            format_type: Export format: 'json' or 'xml'. Default is 'json'.
-            prettyprint: 0=normal format, 1=pretty-printed format.
-            hostids: List of host IDs to export. If empty, exports all.
-            templateids: List of template IDs to export.
-            groupids: List of group IDs to export.
+            format_type: Export format. Options:
+                - 'json': JSON format (most compact and machine-friendly)
+                - 'xml': XML format (human-readable, verbose)
+                - 'yaml': YAML format (Zabbix 5.4+, human-readable and structured)
+                Default is 'json'.
+            prettyprint: If true, returns pretty-printed/indented output for readability. Default is false.
+            templateids: List of specific template IDs to export. If provided, only these templates are exported.
+                Omit or pass None to export all templates.
+            hostids: List of specific host IDs to export. If provided, only these hosts are exported.
+                Omit or pass None to export all hosts.
 
         Returns:
-            dict: Contains 'content' with the exported configuration data.
-                  The format depends on the format_type parameter.
+            dict: Contains:
+                - 'content': The exported configuration in the requested format
+                - 'success': Boolean indicating if export was successful
+                - 'error': Error message if export failed
 
-        Note: Large exports may take time. Use specific IDs for targeted exports.
+        Examples:
+            Export all templates as pretty YAML:
+                format_type='yaml', prettyprint=True
+
+            Export specific host as compact JSON:
+                format_type='json', prettyprint=False
+
+            Export multiple templates for backup:
+                format_type='xml', prettyprint=True
+
+        Note:
+            - Large exports may take time to complete
+            - If no IDs specified, exports entire Zabbix configuration
+            - Export can be used with configuration.import to restore or clone configurations
         """
         try:
-            await ctx.info("Exporting configuration...")
-            params: dict[str, Any] = {"format": format_type, "prettyprint": prettyprint}
-            if hostids:
-                params["hostids"] = hostids
+            await ctx.info(f"Exporting configuration as {format_type}...")
+            options: dict[str, Any] = {}
+
             if templateids:
-                params["templateids"] = templateids
-            if groupids:
-                params["groupids"] = groupids
+                options["templates"] = templateids
+            if hostids:
+                options["hosts"] = hostids
+
+            params: dict[str, Any] = {
+                "format": format_type,
+                "prettyprint": prettyprint,
+                "options": options,
+            }
 
             async with ZabbixClient(config) as api:
                 result = await api.configuration.export(**params)
