@@ -94,6 +94,20 @@ def register_tools(mcp, config: ZabbixConfig):
             dict[str, Any] | None,
             Field(default=None, description="Filter criteria (e.g., {'status': 0})."),
         ] = None,
+        hostname_contains: Annotated[
+            str | None,
+            Field(
+                default=None,
+                description="Shortcut to search for hosts by name (constructs search={'host': hostname_contains}).",
+            ),
+        ] = None,
+        status: Annotated[
+            int | str | None,
+            Field(
+                default=None,
+                description="Shortcut to filter by status (0=enabled, 1=disabled) (constructs filter={'status': status}).",
+            ),
+        ] = None,
         output: Annotated[
             str | list[str],
             Field(
@@ -175,6 +189,8 @@ def register_tools(mcp, config: ZabbixConfig):
             proxyids: Filter hosts assigned to specific proxies.
             search: Search pattern for host name. If no additional options are given, this will perform a 'LIKE "%...%"' search.
             filter_params: Exact match filter (e.g., {'status': '0'} for enabled hosts).
+            hostname_contains: Shortcut to search for hosts by name (adds to 'search').
+            status: Shortcut to filter by status (0=enabled, 1=disabled) (adds to 'filter_params').
             output: 'extend' returns all fields, or specify specific field names.
             limit: Maximum number of results to return (default 100). Set higher for more results.
             offset: Number of results to skip for pagination. Use with sortfield.
@@ -220,10 +236,16 @@ def register_tools(mcp, config: ZabbixConfig):
                 params["templateids"] = templateids
             if proxyids:
                 params["proxyids"] = proxyids
-            if search:
-                params["search"] = search
-            if filter_params:
-                params["filter"] = filter_params
+            _search = dict(search) if search is not None else {}
+            if hostname_contains is not None:
+                _search["host"] = hostname_contains
+            if _search:
+                params["search"] = _search
+            _filter = dict(filter_params) if filter_params is not None else {}
+            if status is not None:
+                _filter["status"] = status
+            if _filter:
+                params["filter"] = _filter
             params["limit"] = limit
             if offset > 0:
                 params["offset"] = offset
@@ -524,6 +546,13 @@ def register_tools(mcp, config: ZabbixConfig):
         search: Annotated[
             dict[str, str] | None, Field(default=None, description="Search.")
         ] = None,
+        group_name_contains: Annotated[
+            str | None,
+            Field(
+                default=None,
+                description="Shortcut to search for groups by name (constructs search={'name': group_name_contains}).",
+            ),
+        ] = None,
         output: Annotated[
             str | list[str], Field(default="extend", description="Output format.")
         ] = "extend",
@@ -578,6 +607,7 @@ def register_tools(mcp, config: ZabbixConfig):
                       Find group IDs with a search or from existing hosts.
             search: Substring search in group name. Matches partial names like 'Web' finds 'Web Servers'.
                     Case-sensitive partial match.
+            group_name_contains: Shortcut to search for groups by name (adds to 'search').
             limit: Maximum number of results to return (default 100). Set higher for more results.
             offset: Number of results to skip for pagination. Use with sortfield.
             select_hosts: If true, include the hosts in each group.
@@ -613,8 +643,11 @@ def register_tools(mcp, config: ZabbixConfig):
                 params["groupids"] = groupids
             if hostids:
                 params["hostids"] = hostids
-            if search:
-                params["search"] = search
+            _search = dict(search) if search is not None else {}
+            if group_name_contains is not None:
+                _search["name"] = group_name_contains
+            if _search:
+                params["search"] = _search
             params["limit"] = limit
             if offset > 0:
                 params["offset"] = offset
@@ -828,6 +861,13 @@ def register_tools(mcp, config: ZabbixConfig):
         groupids: Annotated[list[str] | None, Field(default=None)] = None,
         hostids: Annotated[list[str] | None, Field(default=None)] = None,
         search: Annotated[dict[str, str] | None, Field(default=None)] = None,
+        template_name_contains: Annotated[
+            str | None,
+            Field(
+                default=None,
+                description="Shortcut to search for templates by name (constructs search={'host': template_name_contains}).",
+            ),
+        ] = None,
         output: Annotated[str | list[str], Field(default="extend")] = "extend",
         limit: Annotated[
             int,
@@ -906,6 +946,7 @@ def register_tools(mcp, config: ZabbixConfig):
             templateids: List of template IDs to get. If empty, returns all templates.
                          Find template IDs with a search or from host associations.
             search: Substring search in template name. Matches partial names like 'Linux' finds 'Linux Server Template'.
+            template_name_contains: Shortcut to search for templates by name (adds to 'search').
             limit: Maximum number of results to return (default 100). Set higher for more results.
             offset: Number of results to skip for pagination. Use with sortfield.
             select_groups: If true, each template includes a 'groups' list with its template groups.
@@ -948,8 +989,11 @@ def register_tools(mcp, config: ZabbixConfig):
                 params["groupids"] = groupids
             if hostids:
                 params["hostids"] = hostids
-            if search:
-                params["search"] = search
+            _search = dict(search) if search is not None else {}
+            if template_name_contains is not None:
+                _search["host"] = template_name_contains
+            if _search:
+                params["search"] = _search
             params["limit"] = limit
             if offset > 0:
                 params["offset"] = offset
@@ -1191,6 +1235,20 @@ def register_tools(mcp, config: ZabbixConfig):
         templateids: Annotated[list[str] | None, Field(default=None)] = None,
         search: Annotated[dict[str, str] | None, Field(default=None)] = None,
         filter_params: Annotated[dict[str, Any] | None, Field(default=None)] = None,
+        item_name_contains: Annotated[
+            str | None,
+            Field(
+                default=None,
+                description="Shortcut to search for items by name (constructs search={'name': item_name_contains}).",
+            ),
+        ] = None,
+        item_key_contains: Annotated[
+            str | None,
+            Field(
+                default=None,
+                description="Shortcut to search for items by key (constructs search={'key_': item_key_contains}).",
+            ),
+        ] = None,
         output: Annotated[str | list[str], Field(default="extend")] = "extend",
         limit: Annotated[
             int,
@@ -1258,6 +1316,8 @@ def register_tools(mcp, config: ZabbixConfig):
             templateids: List of template IDs to get items from those templates.
             search: Dictionary with search criteria like {'name': 'CPU'} for substring matching.
             filter_params: Additional filter parameters for advanced filtering.
+            item_name_contains: Shortcut to search for items by name (adds to 'search').
+            item_key_contains: Shortcut to search for items by key (adds to 'search').
             limit: Maximum number of results to return (default 100). Set higher for more results.
             offset: Number of results to skip for pagination. Use with sortfield.
             select_hosts: If true, include the hosts each item belongs to.
@@ -1311,10 +1371,15 @@ def register_tools(mcp, config: ZabbixConfig):
                 params["groupids"] = groupids
             if templateids:
                 params["templateids"] = templateids
-            if search:
-                params["search"] = search
+            _search = dict(search) if search is not None else {}
+            if item_name_contains is not None:
+                _search["name"] = item_name_contains
+            if item_key_contains is not None:
+                _search["key_"] = item_key_contains
+            if _search:
+                params["search"] = _search
             if filter_params:
-                params["filter"] = filter_params
+                params["filter"] = dict(filter_params)
             params["limit"] = limit
             if offset > 0:
                 params["offset"] = offset
@@ -1597,6 +1662,13 @@ def register_tools(mcp, config: ZabbixConfig):
         templateids: Annotated[list[str] | None, Field(default=None)] = None,
         search: Annotated[dict[str, str] | None, Field(default=None)] = None,
         filter_params: Annotated[dict[str, Any] | None, Field(default=None)] = None,
+        description_contains: Annotated[
+            str | None,
+            Field(
+                default=None,
+                description="Shortcut to search for triggers by description (name) (constructs search={'description': description_contains}).",
+            ),
+        ] = None,
         output: Annotated[str | list[str], Field(default="extend")] = "extend",
         limit: Annotated[
             int,
@@ -1657,6 +1729,7 @@ def register_tools(mcp, config: ZabbixConfig):
             templateids: List of template IDs to get triggers from those templates.
             search: Dictionary with search criteria like {'description': 'CPU'}.
             filter_params: Additional filter parameters for advanced filtering.
+            description_contains: Shortcut to search for triggers by description (name) (adds to 'search').
             limit: Maximum number of results to return (default 100). Set higher for more results.
             offset: Number of results to skip for pagination. Use with sortfield.
             only_true: If true, only return triggers currently in problem state.
@@ -1710,8 +1783,11 @@ def register_tools(mcp, config: ZabbixConfig):
                 params["groupids"] = groupids
             if templateids:
                 params["templateids"] = templateids
-            if search:
-                params["search"] = search
+            _search = dict(search) if search is not None else {}
+            if description_contains is not None:
+                _search["description"] = description_contains
+            if _search:
+                params["search"] = _search
             if filter_params:
                 params["filter"] = filter_params
             params["limit"] = limit
@@ -1982,6 +2058,14 @@ def register_tools(mcp, config: ZabbixConfig):
         severities: Annotated[
             list[int] | None, Field(default=None, description="Severity levels 0-5.")
         ] = None,
+        search: Annotated[dict[str, str] | None, Field(default=None)] = None,
+        name_contains: Annotated[
+            str | None,
+            Field(
+                default=None,
+                description="Shortcut to search for problems by name (constructs search={'name': name_contains}).",
+            ),
+        ] = None,
         output: Annotated[str | list[str], Field(default="extend")] = "extend",
         limit: Annotated[
             int,
@@ -2045,6 +2129,8 @@ def register_tools(mcp, config: ZabbixConfig):
             recent: If true, only return recently recovered problems.
             severities: List of severity levels to filter (0=Not classified, 1=Information, 2=Warning,
                        3=Average, 4=High, 5=Disaster).
+            search: Dictionary with search criteria like {'name': 'CPU'}.
+            name_contains: Shortcut to search for problems by name (adds to 'search').
             limit: Maximum number of results to return (default 100). Set higher for more results.
             offset: Number of results to skip for pagination. Use with sortfield.
             acknowledged: False = unacknowledged only, True = acknowledged only, None = all.
@@ -2100,6 +2186,11 @@ def register_tools(mcp, config: ZabbixConfig):
                 params["recent"] = recent
             if severities:
                 params["severities"] = severities
+            _search = dict(search) if search is not None else {}
+            if name_contains is not None:
+                _search["name"] = name_contains
+            if _search:
+                params["search"] = _search
             params["limit"] = limit
             if offset > 0:
                 params["offset"] = offset
