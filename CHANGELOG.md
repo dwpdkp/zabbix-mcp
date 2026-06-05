@@ -1,3 +1,16 @@
+## v0.5.0 (2026-06-05)
+
+### Feat
+
+- **tools**: enhance export functionality to support YAML format and improve documentation
+- **tools**: add simplified search and filter shortcuts to GET tools
+- **tools**: add comprehensive pagination support to all _get tools
+
+### Refactor
+
+- **tools**: remove unused parameters from tools
+- **tools**: remove example responses from API documentation
+
 ## v0.4.0 (2026-05-11)
 
 ### Feat
