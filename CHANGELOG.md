@@ -1,3 +1,9 @@
+## v0.5.2 (2026-07-06)
+
+### Refactor
+
+- update default HTTP bind address and improve transport validation
+
 ## v0.5.1 (2026-07-06)
 
 ### Fix
