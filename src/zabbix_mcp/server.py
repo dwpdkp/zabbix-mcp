@@ -152,6 +152,15 @@ def main():
         )
         raise SystemExit(1)
 
+    if (
+        TRANSPORT_CONFIG.transport_type in {"sse", "http"}
+        and not TRANSPORT_CONFIG.http_bearer_token
+    ):
+        logger.warning(
+            "WARNING: MCP_HTTP_BEARER_TOKEN is not set. The MCP server will run WITHOUT authentication. "
+            "Ensure the server is not exposed to untrusted networks (e.g. bind to 127.0.0.1 instead of 0.0.0.0)."
+        )
+
     auth_method = "token" if has_token else "user/password"
     logger.info(
         f"Starting Zabbix MCP Server connecting to {ZABBIX_CONFIG.zabbix_url} (auth: {auth_method})..."
