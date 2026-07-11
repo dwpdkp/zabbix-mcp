@@ -1676,7 +1676,8 @@ def register_tools(mcp, config: ZabbixConfig):
         ] = None,
         recent: Annotated[bool, Field(default=False)] = False,
         severities: Annotated[
-            list[int] | None, Field(default=None, description="Severity levels 0-5.")
+            list[int | str] | None,
+            Field(default=None, description="Severity levels 0-5."),
         ] = None,
         search: Annotated[dict[str, str] | None, Field(default=None)] = None,
         name_contains: Annotated[
@@ -1792,7 +1793,7 @@ def register_tools(mcp, config: ZabbixConfig):
             if recent:
                 params["recent"] = recent
             if severities:
-                params["severities"] = severities
+                params["severities"] = [int(s) for s in severities]
             _search = dict(search) if search is not None else {}
             if name_contains is not None:
                 _search["name"] = name_contains
