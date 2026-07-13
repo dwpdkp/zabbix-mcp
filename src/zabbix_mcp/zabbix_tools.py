@@ -246,7 +246,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.host.get(**params)
                 return {
                     "hosts": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -570,7 +570,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.hostgroup.get(**params)
                 return {
                     "groups": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -852,7 +852,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.template.get(**params)
                 return {
                     "templates": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -1155,7 +1155,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.item.get(**params)
                 return {
                     "items": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -1487,7 +1487,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.trigger.get(**params)
                 return {
                     "triggers": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -1811,7 +1811,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.problem.get(**params)
                 return {
                     "problems": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -1980,7 +1980,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.event.get(**params)
                 return {
                     "events": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -2144,7 +2144,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.history.get(**params)
                 return {
                     "history": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -2240,7 +2240,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.trend.get(**params)
                 return {
                     "trends": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -2347,7 +2347,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.user.get(**params)
                 return {
                     "users": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -2608,7 +2608,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.proxy.get(**params)
                 return {
                     "proxies": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -2849,7 +2849,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.maintenance.get(**params)
                 return {
                     "maintenance": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -3150,7 +3150,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.action.get(**params)
                 return {
                     "actions": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -3515,7 +3515,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.mediatype.get(**params)
                 return {
                     "mediatypes": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -3657,7 +3657,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.graph.get(**params)
                 return {
                     "graphs": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -3771,7 +3771,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.discoveryrule.get(**params)
                 return {
                     "discoveryrules": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -3881,7 +3881,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.itemprototype.get(**params)
                 return {
                     "itemprototypes": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -3982,7 +3982,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.drule.get(**params)
                 return {
                     "drules": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -4255,7 +4255,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.sla.get(**params)
                 return {
                     "slas": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -4360,7 +4360,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.service.get(**params)
                 return {
                     "services": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -4473,7 +4473,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.script.get(**params)
                 return {
                     "scripts": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
@@ -4636,7 +4636,7 @@ def register_tools(mcp, config: ZabbixConfig):
                 result = await api.usermacro.get(**params)
                 return {
                     "macros": result,
-                    "count": len(result),
+                    "count": int(result) if count_output else len(result),
                     "limit": limit,
                     "offset": offset,
                 }
