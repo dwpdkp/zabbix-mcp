@@ -418,6 +418,15 @@ def register_tools(mcp, config: ZabbixConfig):
     async def host_delete(
         ctx: Context,
         hostids: Annotated[list[str], Field(description="List of host IDs to delete.")],
+        confirm: Annotated[
+            bool,
+            Field(
+                description=(
+                    "Must be explicitly set to true to delete. Ask the user for "
+                    "permission first."
+                )
+            ),
+        ] = False,
     ) -> dict:
         """
         Delete hosts from Zabbix.
@@ -427,6 +436,7 @@ def register_tools(mcp, config: ZabbixConfig):
 
         Args:
             hostids: List of host IDs to delete. Find them with host_get.
+            confirm: Must be true to delete. Defaults to false.
 
         Returns:
             dict: Contains 'hostids' list with deleted host IDs and 'success' flag.
@@ -435,6 +445,15 @@ def register_tools(mcp, config: ZabbixConfig):
         Warning: This is permanent. Consider disabling the host instead (set status=1)
                  if you might need to restore it later.
         """
+        if not confirm:
+            await ctx.error(f"Blocked host_delete for {hostids}: confirmation required.")
+            return {
+                "error": (
+                    "SECURITY: host_delete was not run. This permanently deletes hosts "
+                    "and all associated history/alerts. Ask the user for explicit "
+                    "permission, then call again with confirm=true."
+                )
+            }
         try:
             await ctx.info(f"Deleting hosts: {hostids}...")
             async with ZabbixClient(config) as api:
@@ -666,6 +685,15 @@ def register_tools(mcp, config: ZabbixConfig):
     async def hostgroup_delete(
         ctx: Context,
         groupids: Annotated[list[str], Field(description="Group IDs to delete.")],
+        confirm: Annotated[
+            bool,
+            Field(
+                description=(
+                    "Must be explicitly set to true to delete. Ask the user for "
+                    "permission first."
+                )
+            ),
+        ] = False,
     ) -> dict:
         """
         Delete host groups from Zabbix.
@@ -675,6 +703,7 @@ def register_tools(mcp, config: ZabbixConfig):
 
         Args:
             groupids: List of host group IDs to delete. Find them with hostgroup_get.
+            confirm: Must be true to delete. Defaults to false.
 
         Returns:
             dict: Contains 'groupids' list with deleted group IDs and 'success' flag.
@@ -683,6 +712,14 @@ def register_tools(mcp, config: ZabbixConfig):
         Warning: If hosts belong to the group, they will no longer be members after deletion.
                  Consider reassigning hosts to different groups before deleting.
         """
+        if not confirm:
+            await ctx.error(f"Blocked hostgroup_delete for {groupids}: confirmation required.")
+            return {
+                "error": (
+                    "SECURITY: hostgroup_delete was not run. Ask the user for explicit "
+                    "permission, then call again with confirm=true."
+                )
+            }
         try:
             await ctx.info(f"Deleting host groups: {groupids}...")
             async with ZabbixClient(config) as api:
@@ -965,6 +1002,15 @@ def register_tools(mcp, config: ZabbixConfig):
     async def template_delete(
         ctx: Context,
         templateids: Annotated[list[str], Field(description="Template IDs to delete.")],
+        confirm: Annotated[
+            bool,
+            Field(
+                description=(
+                    "Must be explicitly set to true to delete. Ask the user for "
+                    "permission first."
+                )
+            ),
+        ] = False,
     ) -> dict:
         """
         Delete templates from Zabbix.
@@ -974,6 +1020,7 @@ def register_tools(mcp, config: ZabbixConfig):
 
         Args:
             templateids: List of template IDs to delete. Find them with template_get.
+            confirm: Must be true to delete. Defaults to false.
 
         Returns:
             dict: Contains 'templateids' list with deleted template IDs and 'success' flag.
@@ -983,6 +1030,14 @@ def register_tools(mcp, config: ZabbixConfig):
                  hosts using that template. Consider unlinked the template first if you want
                  to keep the configurations on the hosts.
         """
+        if not confirm:
+            await ctx.error(f"Blocked template_delete for {templateids}: confirmation required.")
+            return {
+                "error": (
+                    "SECURITY: template_delete was not run. Ask the user for explicit "
+                    "permission, then call again with confirm=true."
+                )
+            }
         try:
             await ctx.info(f"Deleting templates: {templateids}...")
             async with ZabbixClient(config) as api:
@@ -2359,7 +2414,7 @@ def register_tools(mcp, config: ZabbixConfig):
         tags={"zabbix", "user"},
         annotations={
             "readOnlyHint": False,
-            "destructiveHint": False,
+            "destructiveHint": True,
             "idempotentHint": False,
         },
     )
@@ -2372,6 +2427,16 @@ def register_tools(mcp, config: ZabbixConfig):
         ],
         name: Annotated[str | None, Field(default=None)] = None,
         surname: Annotated[str | None, Field(default=None)] = None,
+        confirm: Annotated[
+            bool,
+            Field(
+                description=(
+                    "Must be explicitly set to true to create the account. Creating a "
+                    "user grants it whatever privileges its assigned usrgrps carry, up to "
+                    "and including super admin. Ask the user for permission first."
+                )
+            ),
+        ] = False,
     ) -> dict:
         """
         Create a new user in Zabbix.
@@ -2386,6 +2451,7 @@ def register_tools(mcp, config: ZabbixConfig):
                     Users inherit permissions from their groups. At least one group is required.
             name: User's first name (optional).
             surname: User's last name (optional).
+            confirm: Must be true to create the account. Defaults to false.
 
         Returns:
             dict: Contains 'userids' list with newly created user ID(s) and 'success' flag.
@@ -2393,6 +2459,15 @@ def register_tools(mcp, config: ZabbixConfig):
         Note: New users receive default permissions from their assigned groups. Change passwords
               through user_update if needed. Username cannot be changed after creation.
         """
+        if not confirm:
+            await ctx.error(f"Blocked user_create for '{username}': confirmation required.")
+            return {
+                "error": (
+                    "SECURITY: user_create was not run. Creating an account grants it "
+                    "whatever privileges its usrgrps carry. Ask the user for explicit "
+                    "permission, then call again with confirm=true."
+                )
+            }
         try:
             await ctx.info(f"Creating user '{username}'...")
             params: dict[str, Any] = {
@@ -2416,7 +2491,7 @@ def register_tools(mcp, config: ZabbixConfig):
         tags={"zabbix", "user"},
         annotations={
             "readOnlyHint": False,
-            "destructiveHint": False,
+            "destructiveHint": True,
             "idempotentHint": False,
         },
     )
@@ -2434,6 +2509,25 @@ def register_tools(mcp, config: ZabbixConfig):
                 description="User type: 1=Zabbix user, 2=Zabbix admin, 3=Zabbix super admin.",
             ),
         ] = None,
+        confirm: Annotated[
+            bool,
+            Field(
+                description=(
+                    "Must be explicitly set to true to apply the update. Ask the user "
+                    "for permission first."
+                )
+            ),
+        ] = False,
+        confirm_privilege_escalation: Annotated[
+            bool,
+            Field(
+                description=(
+                    "Must ALSO be true (in addition to confirm) when type_=3 (super admin). "
+                    "Granting super admin is a full privilege escalation and requires "
+                    "separate, explicit user approval."
+                )
+            ),
+        ] = False,
     ) -> dict:
         """
         Update an existing user in Zabbix.
@@ -2448,11 +2542,35 @@ def register_tools(mcp, config: ZabbixConfig):
             surname: New last name.
             passwd: New password.
             type_: New user type (1=user, 2=admin, 3=super admin).
+            confirm: Must be true to apply any change. Defaults to false.
+            confirm_privilege_escalation: Must ALSO be true when type_=3. Defaults to false.
 
         Returns:
             dict: Contains 'userids' list with updated user IDs and 'success' flag.
                   On error, contains 'error' key with the error message.
         """
+        if not confirm:
+            await ctx.error(f"Blocked user_update for userid {userid}: confirmation required.")
+            return {
+                "error": (
+                    "SECURITY: user_update was not run. This can change a user's password "
+                    "or privilege level. Ask the user for explicit permission, then call "
+                    "again with confirm=true."
+                )
+            }
+        if type_ == 3 and not confirm_privilege_escalation:
+            await ctx.error(
+                f"Blocked user_update for userid {userid}: privilege escalation to super "
+                "admin requires confirm_privilege_escalation=true."
+            )
+            return {
+                "error": (
+                    "SECURITY: user_update was not run. Setting type_=3 grants Zabbix super "
+                    "admin (full read/write over every host, action, and script in this "
+                    "instance). Ask the user for explicit approval of this specific "
+                    "escalation, then call again with confirm_privilege_escalation=true."
+                )
+            }
         try:
             await ctx.info(f"Updating user {userid}...")
             params: dict[str, Any] = {"userid": userid}
@@ -2485,6 +2603,15 @@ def register_tools(mcp, config: ZabbixConfig):
     async def user_delete(
         ctx: Context,
         userids: Annotated[list[str], Field(description="User IDs to delete.")],
+        confirm: Annotated[
+            bool,
+            Field(
+                description=(
+                    "Must be explicitly set to true to delete. Deletion is permanent and "
+                    "immediate. Ask the user for permission first."
+                )
+            ),
+        ] = False,
     ) -> dict:
         """
         Delete users from Zabbix.
@@ -2494,6 +2621,7 @@ def register_tools(mcp, config: ZabbixConfig):
 
         Args:
             userids: List of user IDs to delete. Find them with user_get.
+            confirm: Must be true to delete. Defaults to false.
 
         Returns:
             dict: Contains 'userids' list with deleted user IDs and 'success' flag.
@@ -2502,6 +2630,15 @@ def register_tools(mcp, config: ZabbixConfig):
         Warning: This action is permanent and immediate. Deleted users lose all access to Zabbix.
                  Consider disabling the user instead (modify type) if temporary removal is needed.
         """
+        if not confirm:
+            await ctx.error(f"Blocked user_delete for {userids}: confirmation required.")
+            return {
+                "error": (
+                    "SECURITY: user_delete was not run. Deletion is permanent and "
+                    "immediate. Ask the user for explicit permission, then call again "
+                    "with confirm=true."
+                )
+            }
         try:
             await ctx.info(f"Deleting users: {userids}...")
             async with ZabbixClient(config) as api:
@@ -3391,6 +3528,15 @@ def register_tools(mcp, config: ZabbixConfig):
     async def action_delete(
         ctx: Context,
         actionids: Annotated[list[str], Field(description="Action IDs to delete.")],
+        confirm: Annotated[
+            bool,
+            Field(
+                description=(
+                    "Must be explicitly set to true to delete. Ask the user for "
+                    "permission first."
+                )
+            ),
+        ] = False,
     ) -> dict:
         """
         Delete actions from Zabbix.
@@ -3401,11 +3547,22 @@ def register_tools(mcp, config: ZabbixConfig):
 
         Args:
             actionids: List of action IDs to delete. Find them with action_get.
+            confirm: Must be true to delete. Defaults to false.
 
         Returns:
             dict: Contains 'actionids' list with deleted action IDs and 'success' flag.
                   On error, contains 'error' key with the error message.
         """
+        if not confirm:
+            await ctx.error(f"Blocked action_delete for {actionids}: confirmation required.")
+            return {
+                "error": (
+                    "SECURITY: action_delete was not run. Deleting an action can remove "
+                    "an automated remediation (e.g., a remote command or webhook) relied "
+                    "on by monitoring. Ask the user for explicit permission, then call "
+                    "again with confirm=true."
+                )
+            }
         try:
             await ctx.info(f"Deleting actions: {actionids}...")
             async with ZabbixClient(config) as api:
@@ -4095,7 +4252,7 @@ def register_tools(mcp, config: ZabbixConfig):
         tags={"zabbix", "configuration"},
         annotations={
             "readOnlyHint": False,
-            "destructiveHint": False,
+            "destructiveHint": True,
             "idempotentHint": False,
         },
     )
@@ -4124,6 +4281,16 @@ def register_tools(mcp, config: ZabbixConfig):
                 description="If true, returns only the count of matched objects as an integer.",
             ),
         ] = False,
+        confirm: Annotated[
+            bool,
+            Field(
+                description=(
+                    "Must be explicitly set to true to run the import. This can create, "
+                    "overwrite, or (depending on rules) delete existing hosts, templates, "
+                    "and other configuration objects. Ask the user for permission first."
+                )
+            ),
+        ] = False,
     ) -> dict:
         """
         Import configurations into Zabbix.
@@ -4134,6 +4301,7 @@ def register_tools(mcp, config: ZabbixConfig):
         Args:
             content: Configuration content to import (JSON or XML string).
             format_type: Import format: 'json' or 'xml'. Default is 'json'.
+            confirm: Must be true to run the import. Defaults to false.
 
         Returns:
             dict: Contains import result with created/updated object counts.
@@ -4142,6 +4310,15 @@ def register_tools(mcp, config: ZabbixConfig):
         Warning: Importing can create or overwrite existing configurations.
                  Verify content before importing in production environments.
         """
+        if not confirm:
+            await ctx.error("Blocked configuration_import: confirmation required.")
+            return {
+                "error": (
+                    "SECURITY: configuration_import was not run. This can create, "
+                    "overwrite, or delete existing Zabbix configuration objects. Ask the "
+                    "user for explicit permission, then call again with confirm=true."
+                )
+            }
         try:
             await ctx.info("Importing configuration...")
             params: dict[str, Any] = {"format": format_type, "source": content}
@@ -4485,7 +4662,7 @@ def register_tools(mcp, config: ZabbixConfig):
         tags={"zabbix", "script"},
         annotations={
             "readOnlyHint": False,
-            "destructiveHint": False,
+            "destructiveHint": True,
             "idempotentHint": False,
         },
     )
@@ -4493,6 +4670,17 @@ def register_tools(mcp, config: ZabbixConfig):
         ctx: Context,
         scriptid: Annotated[str, Field(description="Script ID to execute.")],
         hostid: Annotated[str, Field(description="Host ID to execute the script on.")],
+        confirm: Annotated[
+            bool,
+            Field(
+                description=(
+                    "Must be explicitly set to true to execute. Zabbix scripts commonly "
+                    "run with elevated (often root/SYSTEM) privileges on the target host "
+                    "via the Zabbix agent, so this is equivalent to remote command "
+                    "execution. Ask the user for permission before setting this to true."
+                )
+            ),
+        ] = False,
     ) -> dict:
         """
         Execute a script on a host in Zabbix.
@@ -4503,14 +4691,31 @@ def register_tools(mcp, config: ZabbixConfig):
         Args:
             scriptid: ID of the script to execute. Find with script_get.
             hostid: ID of the host to run the script on.
+            confirm: Must be true to execute. Defaults to false.
 
         Returns:
             dict: Contains execution result with status and any output from the script.
                   Returns success flag and response data from the executed script.
 
-        Warning: Script execution happens remotely on the host. Ensure the script is safe
-                 and the host has proper agent/connectivity to execute it.
+        Warning: Script execution happens remotely on the host, typically with elevated
+                 privileges via the Zabbix agent. This is equivalent to remote command
+                 execution against production infrastructure. Confirm the script's actual
+                 behavior (via script_get) and get explicit user approval before setting
+                 confirm=true.
         """
+        if not confirm:
+            await ctx.error(
+                f"Blocked script_execute (scriptid={scriptid}, hostid={hostid}): "
+                "confirmation required."
+            )
+            return {
+                "error": (
+                    "SECURITY: script_execute is destructive-by-default and was not run. "
+                    "Zabbix scripts often execute with elevated privileges on the target "
+                    "host. Ask the user for explicit permission, then call again with "
+                    "confirm=true."
+                )
+            }
         try:
             await ctx.info(f"Executing script {scriptid} on host {hostid}...")
             async with ZabbixClient(config) as api:
