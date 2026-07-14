@@ -222,21 +222,21 @@ MCP_TRANSPORT=stdio
 - `host_get`: List hosts with optional filtering by groups, templates, proxies, and search criteria
 - `host_create`: Create a new host with interfaces and template linking
 - `host_update`: Update host properties (name, status, description)
-- `host_delete`: Delete hosts by ID
+- `host_delete`: Delete hosts by ID — **requires `confirm=true`**
 
 ### Host Group Management
 
 - `hostgroup_get`: List host groups with optional filtering
 - `hostgroup_create`: Create a new host group
 - `hostgroup_update`: Update an existing host group's properties (name)
-- `hostgroup_delete`: Delete host groups
+- `hostgroup_delete`: Delete host groups — **requires `confirm=true`**
 
 ### Template Management
 
 - `template_get`: List templates with optional filtering
 - `template_create`: Create a new template
 - `template_update`: Update template properties (name, description)
-- `template_delete`: Delete templates
+- `template_delete`: Delete templates — **requires `confirm=true`**
 
 ### Item Management
 
@@ -266,9 +266,9 @@ MCP_TRANSPORT=stdio
 ### User Management
 
 - `user_get`: List users with optional filtering
-- `user_create`: Create a new user
-- `user_update`: Update user properties (name, surname, password, type)
-- `user_delete`: Delete users
+- `user_create`: Create a new user — **requires `confirm=true`** (the account inherits whatever privileges its `usrgrps` carry)
+- `user_update`: Update user properties (name, surname, password, type) — **requires `confirm=true`**; granting Zabbix super admin (`type=3`) additionally requires **`confirm_privilege_escalation=true`**
+- `user_delete`: Delete users — **requires `confirm=true`**
 
 ### Proxy Management
 
@@ -287,6 +287,7 @@ MCP_TRANSPORT=stdio
 ### Action & Media
 
 - `action_get`: List actions (triggers, autoregistration, etc.)
+- `action_delete`: Delete an action — **requires `confirm=true`** (can remove an automated remediation relied on by monitoring)
 - `mediatype_get`: List media types
 
 ### Graph & Discovery
@@ -304,7 +305,7 @@ MCP_TRANSPORT=stdio
 ### Scripts
 
 - `script_get`: List scripts
-- `script_execute`: Execute a script on a host
+- `script_execute`: Execute a script on a host — **requires `confirm=true`** (Zabbix scripts commonly run with elevated, often root/SYSTEM, privileges on the target via the Zabbix agent — equivalent to remote command execution)
 
 ### User Macros
 
@@ -315,9 +316,17 @@ MCP_TRANSPORT=stdio
 ### Configuration Management
 
 - `configuration_export`: Export Zabbix configurations to JSON or XML
-- `configuration_import`: Import Zabbix configurations from JSON or XML
+- `configuration_import`: Import Zabbix configurations from JSON or XML — **requires `confirm=true`** (can create or overwrite existing Zabbix configuration objects)
 
 ## Security & Safety Features
+
+### Confirmation Gates (fork-specific)
+
+Independent of `READ_ONLY_MODE`, the following destructive or privilege-changing tools require an explicit `confirm: true` argument on every call, even when write operations are otherwise enabled: `script_execute`, `user_create`, `user_update`, `user_delete`, `host_delete`, `hostgroup_delete`, `template_delete`, `action_delete`, `configuration_import`.
+
+Calling one of these without `confirm=true` returns an error dict (`{"error": "SECURITY: ... was not run. ..."}`) instead of touching the Zabbix API. `user_update` has a second, narrower gate: setting `type=3` (Zabbix super admin) also requires `confirm_privilege_escalation=true`, so a routine profile edit can't accidentally grant super-admin in the same call as a legitimate confirmed change.
+
+This is a code-level safety net that exists whether or not `READ_ONLY_MODE` is set — it protects against an agent (or a misfiring automation) invoking these tools without the human in the loop explicitly approving the specific destructive action, rather than relying solely on a global read-only toggle.
 
 ### Read-Only Mode
 
@@ -512,3 +521,11 @@ For more information on FastMCP transports, see the [FastMCP documentation](http
 ## License
 
 MIT License - see LICENSE file for details.
+
+---
+
+## Document History
+
+| Date | Author | Changes |
+|------|--------|---------|
+| 2026-07-14 | Doug Pearson | Documented fork-specific confirm-gate security hardening (script_execute, user management, delete tools, configuration_import) added on top of upstream mhajder/zabbix-mcp |
