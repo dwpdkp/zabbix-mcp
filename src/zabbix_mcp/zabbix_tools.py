@@ -2352,6 +2352,20 @@ def register_tools(mcp, config: ZabbixConfig):
                 description="If true, returns only the count of matched objects as an integer.",
             ),
         ] = False,
+        select_medias: Annotated[
+            bool,
+            Field(
+                default=False,
+                description="If true, include each user's configured media (e.g. Slack/email routing) in the response (selectMedias=extend).",
+            ),
+        ] = False,
+        select_usrgrps: Annotated[
+            bool,
+            Field(
+                default=False,
+                description="If true, include each user's user group memberships in the response (selectUsrgrps=extend).",
+            ),
+        ] = False,
     ) -> dict:
         """
         Get users from Zabbix.
@@ -2365,6 +2379,8 @@ def register_tools(mcp, config: ZabbixConfig):
             filter_params: Additional filter parameters for advanced filtering.
             limit: Maximum number of results to return (default 100). Set higher for more results.
             offset: Number of results to skip for pagination. Use with sortfield.
+            select_medias: If true, include each user's media entries (mediatypeid, sendto, active, severity, period).
+            select_usrgrps: If true, include each user's user group memberships.
 
         Returns:
             dict: Contains 'users' list with user objects, 'count' of returned users,
@@ -2393,6 +2409,10 @@ def register_tools(mcp, config: ZabbixConfig):
                 params["search"] = search
             if filter_params:
                 params["filter"] = filter_params
+            if select_medias:
+                params["selectMedias"] = "extend"
+            if select_usrgrps:
+                params["selectUsrgrps"] = "extend"
 
             params["limit"] = limit
             if offset > 0:
@@ -2509,6 +2529,20 @@ def register_tools(mcp, config: ZabbixConfig):
                 description="User type: 1=Zabbix user, 2=Zabbix admin, 3=Zabbix super admin.",
             ),
         ] = None,
+        medias: Annotated[
+            list[dict[str, Any]] | None,
+            Field(
+                default=None,
+                description=(
+                    "Replaces the user's full media list. Each entry: "
+                    "{'mediatypeid': '34', 'sendto': '@doug.pearson', 'active': '0', "
+                    "'severity': '63', 'period': '1-7,00:00-24:00'}. "
+                    "NOTE: Zabbix 'active' is inverted - '0' means ENABLED, '1' means DISABLED. "
+                    "This replaces ALL existing media for the user, so include every entry you "
+                    "want to keep, not just the one being changed."
+                ),
+            ),
+        ] = None,
         confirm: Annotated[
             bool,
             Field(
@@ -2542,6 +2576,7 @@ def register_tools(mcp, config: ZabbixConfig):
             surname: New last name.
             passwd: New password.
             type_: New user type (1=user, 2=admin, 3=super admin).
+            medias: Full replacement list of media entries (see field description for format/gotchas).
             confirm: Must be true to apply any change. Defaults to false.
             confirm_privilege_escalation: Must ALSO be true when type_=3. Defaults to false.
 
@@ -2584,6 +2619,8 @@ def register_tools(mcp, config: ZabbixConfig):
                 params["passwd"] = passwd
             if type_ is not None:
                 params["type"] = type_
+            if medias is not None:
+                params["medias"] = medias
 
             async with ZabbixClient(config) as api:
                 result = await api.user.update(**params)
@@ -3232,6 +3269,34 @@ def register_tools(mcp, config: ZabbixConfig):
                 description="If true, returns only the count of matched objects as an integer.",
             ),
         ] = False,
+        select_operations: Annotated[
+            bool,
+            Field(
+                default=False,
+                description="If true, include the action's operations (what fires on problem) in the response (selectOperations=extend).",
+            ),
+        ] = False,
+        select_recovery_operations: Annotated[
+            bool,
+            Field(
+                default=False,
+                description="If true, include the action's recovery operations (what fires on resolution) in the response (selectRecoveryOperations=extend).",
+            ),
+        ] = False,
+        select_update_operations: Annotated[
+            bool,
+            Field(
+                default=False,
+                description="If true, include the action's update operations (what fires on acknowledgement/update) in the response (selectUpdateOperations=extend).",
+            ),
+        ] = False,
+        select_filter: Annotated[
+            bool,
+            Field(
+                default=False,
+                description="If true, include the action's condition filter (evaltype, formula, conditions) in the response (selectFilter=extend).",
+            ),
+        ] = False,
     ) -> dict:
         """
         Get actions from Zabbix.
@@ -3247,6 +3312,10 @@ def register_tools(mcp, config: ZabbixConfig):
             filter_params: Additional filter parameters for advanced filtering.
             limit: Maximum number of results to return (default 100). Set higher for more results.
             offset: Number of results to skip for pagination. Use with sortfield.
+            select_operations: If true, include the action's operations (opmessage/opmessage_grp/opmessage_usr, etc.).
+            select_recovery_operations: If true, include the action's recovery operations.
+            select_update_operations: If true, include the action's update operations.
+            select_filter: If true, include the action's condition filter (evaltype, formula, conditions).
 
         Returns:
             dict: Contains 'actions' list with action objects, 'count' of returned actions,
@@ -3278,6 +3347,14 @@ def register_tools(mcp, config: ZabbixConfig):
                 params["search"] = search
             if filter_params:
                 params["filter"] = filter_params
+            if select_operations:
+                params["selectOperations"] = "extend"
+            if select_recovery_operations:
+                params["selectRecoveryOperations"] = "extend"
+            if select_update_operations:
+                params["selectUpdateOperations"] = "extend"
+            if select_filter:
+                params["selectFilter"] = "extend"
 
             params["limit"] = limit
             if offset > 0:
