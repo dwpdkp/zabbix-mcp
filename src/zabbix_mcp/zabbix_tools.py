@@ -4340,9 +4340,20 @@ def register_tools(mcp, config: ZabbixConfig):
             str,
             Field(
                 default="json",
-                description="Import format: 'json' or 'xml'.",
+                description="Import format: 'json', 'xml' or 'yaml'.",
             ),
         ] = "json",
+        rules: Annotated[
+            dict[str, Any] | None,
+            Field(
+                default=None,
+                description=(
+                    "Zabbix import rules, e.g. {\"templates\": {\"createMissing\": true, "
+                    "\"updateExisting\": true}}. Default creates missing and updates "
+                    "existing objects, never deletes."
+                ),
+            ),
+        ] = None,
         sortfield: Annotated[
             str | None,
             Field(default=None, description="Field to sort by."),
@@ -4376,8 +4387,9 @@ def register_tools(mcp, config: ZabbixConfig):
         Useful for migration, cloning, or restoring configurations.
 
         Args:
-            content: Configuration content to import (JSON or XML string).
-            format_type: Import format: 'json' or 'xml'. Default is 'json'.
+            content: Configuration content to import (JSON, XML or YAML string).
+            format_type: Import format: 'json', 'xml' or 'yaml'. Default is 'json'.
+            rules: Zabbix import rules. Default creates and updates, never deletes.
             confirm: Must be true to run the import. Defaults to false.
 
         Returns:
@@ -4398,10 +4410,22 @@ def register_tools(mcp, config: ZabbixConfig):
             }
         try:
             await ctx.info("Importing configuration...")
-            params: dict[str, Any] = {"format": format_type, "source": content}
+            if rules is None:
+                upsert = {"createMissing": True, "updateExisting": True}
+                rules = {
+                    key: dict(upsert)
+                    for key in (
+                        "host_groups", "template_groups", "hosts", "templates",
+                        "items", "triggers", "discoveryRules", "graphs",
+                        "valueMaps", "templateDashboards", "httptests",
+                    )
+                }
+                rules["templateLinkage"] = {"createMissing": True}
+            params: dict[str, Any] = {"format": format_type, "rules": rules, "source": content}
 
             async with ZabbixClient(config) as api:
-                result = await api.configuration.import_config(**params)
+                # zabbix_utils maps a trailing "_" to the reserved word "import"
+                result = await api.configuration.import_(**params)
                 return {"result": result, "success": True}
         except Exception as e:
             await ctx.error(f"Error importing configuration: {e!s}")
